@@ -1,17 +1,14 @@
+using CustomActivity;
 using Elsa.EntityFrameworkCore.Extensions;
 using Elsa.EntityFrameworkCore.Modules.Management;
 using Elsa.EntityFrameworkCore.Modules.Runtime;
 using Elsa.Extensions;
-
-
+using Elsa.Workflows;
 using Microsoft.AspNetCore.Mvc;
-
 var builder = WebApplication.CreateBuilder(args);
 builder.WebHost.UseStaticWebAssets();
-
 var services = builder.Services;
 var configuration = builder.Configuration;
-
 services
     .AddElsa(elsa =>
     {
@@ -36,6 +33,18 @@ services
         .AddActivitiesFrom<Program>()
         .AddWorkflowsFrom<Program>();
     });
+
+// Register OpenAPI services separately
+services.AddSingleton<IOpenApiSpecificationParser, OpenApiSpecificationParser>();
+services.AddSingleton<IActivityProvider, OpenApiActivityProvider>(serviceProvider =>
+{
+    var parser = serviceProvider.GetRequiredService<IOpenApiSpecificationParser>();
+    var logger = serviceProvider.GetRequiredService<ILogger<OpenApiActivityProvider>>();
+    var httpClientFactory = serviceProvider.GetRequiredService<IHttpClientFactory>();
+    var activityLogger = serviceProvider.GetRequiredService<ILogger<OpenApiActivity>>();
+    return new OpenApiActivityProvider(parser, logger,activityLogger,httpClientFactory, "OpenApiSpecs");
+});
+
 
 services.AddCors(cors => cors.AddDefaultPolicy(policy => policy.AllowAnyHeader().AllowAnyMethod().AllowAnyOrigin().WithExposedHeaders("*")));
 services.AddRazorPages(options => options.Conventions.ConfigureFilter(new IgnoreAntiforgeryTokenAttribute()));

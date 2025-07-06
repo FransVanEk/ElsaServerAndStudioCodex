@@ -2,6 +2,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\ElsaStudio\ElsaStudio.csproj" />
+    <ProjectReference Include="..\neobluetech.ElsaOpenApiClient\neobluetech.ElsaOpenApiClient.csproj" />
   </ItemGroup>
 
   <ItemGroup>
